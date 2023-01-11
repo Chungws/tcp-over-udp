@@ -1,6 +1,6 @@
 use std::{
-    io::{prelude::*, BufReader},
-    net::{TcpListener, TcpStream}
+    io::prelude::*,
+    net::{TcpListener, TcpStream},
 };
 
 fn main() {
@@ -19,11 +19,20 @@ fn main() {
 }
 
 fn handle_connection(mut stream: TcpStream) {
-    let buf_reader = BufReader::new(&mut stream);
-    let request: Vec<_> = buf_reader
-        .lines()
-        .map(|result| result.unwrap())
-        .take_while(|line| !line.is_empty())
-        .collect();
-    
+    let mut read = [0; 2048];
+    loop {
+        match stream.read(&mut read) {
+            Ok(n) => {
+                if n == 0 {
+                    break;
+                }
+                stream.write(&read[..n]).expect("couldn't write");
+            }
+            Err(_) => {
+                println!("Error occured!");
+                break;
+            }
+        }
+    }
+    println!("Disconnected");
 }
